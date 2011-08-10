@@ -1,0 +1,49 @@
+\section{The GEHL Predictor}
+\label{sec:gehl}
+Compared with simple predictors we've built before, the O-GEHL predictor is quite complicated. In Seznec's implementation, several complex functions were added to extract information from index. To make sure that our implementations were correct, we worked in parallel, implementing two versions of GEHL separately and constantly compared the outputs to insure they were the same.   Using this approach, we detected and fixed several bugs, particularly in the index computation (Section ~\ref{sec:indexing}). Our final predictor catches most features described in Seznec's paper, and gives reliable performance in a series of experiments. This section briefly discusses the principle we used for implementation and focuses on the indexing function we've adapted from Seznec's work.
+
+The GEHL predictor features $M$ distinct predictor tables $T_i$ , $0\leq i < M$.  Each of the tables has its own unique history length $L(i)$.  Together the lengths form a geometric series of the form $L(i)=\alpha^{i-1}L(1)$, $1\leq i < M$. $T_0$ uses a history length of 0.  To get an index for a branch, each tables uses its own index function -- which is dependent on $L(i)$ -- to combine information from the branch address, the branch history, and the path history.  The predictor tables store predictions in the form of signed counters. In order to compute a prediction , the counter value $C(i)$ is read on each table $T_i$ and the prediction is the sign of the sum $S$ of the $M$ counters $C(i)$, ($S = \frac{M}{2}+\sum_{0 \leq i < M} C(i)$). The prediction is taken if $S$ is 0 or positive and not-taken when S is negative.
+
+The GEHL predictor updates itself on mispredictions or when the absolute value of the computed sum $S$ is smaller than a threshold $\theta$.  Algorithm\ref{alg:update} gives the exact update policy.
+\begin{algorithm}[t]
+  \label{alg:update}
+  \caption{ GEHL update.  This algorithm updates the predictor if a branch is mispredicted or if the ``confidence'' of the prediction is below a certain threshold.}
+  \begin{algorithmic}[1]
+    \STATE Input: The current predicted direction of the branch $p$, the actual direction of the branch $a$, the sum of the tables for the predicted branch $S$, and the cutoff $\theta$.
+    \STATE
+    \IF{($p\neq a$) or ($|S| \leq \theta$)}
+    \FOR{each $i$ in parallel}
+      \IF{$a$ is taken}
+        \STATE $C(i)=C(i)+1$
+      \ELSE
+        \STATE $C(i)=C(i)-1$
+      \ENDIF
+    \ENDFOR
+    \ENDIF
+  \end{algorithmic}
+\end{algorithm}
+\subsection{Indexing the Predictor}
+\label{sec:indexing}
+The main purpose of the GEHL predictor is to increase the overall performance of a branch predictor by exploiting drastically different history lengths.  This presents a problem when using the history as part of the index to the prediction tables.  Simpler schemes like gshare -- which use history lengths that are about equal to the number of index bits -- can simply XOR the branch history with other components in order to determine the index.  This will not work for GEHL, though, because typical configurations consider branch histories with more than 150 entries.  GEHL also uses the path history, which is the sequence of low order bits from both conditional and unconditional branches, to create the index.
+
+\begin{algorithm}[t]
+  \newcommand{\g}{\texttt{g}}
+  \renewcommand{\c}{\texttt{c}}
+  \caption{History compression.  $i$ is the table number.  $L(i)$ is the number of history bits that the table uses. $n$ is the number of index bits. \texttt{shift} and \texttt{lastDest} are parameters that must be less than $n$.  This algorithm effectively compresses the branch history for use as an index in the table.}
+  \label{alg:compression}
+  \begin{algorithmic}[1]
+    \STATE Input: The current compressed history \c, and the global branch history \texttt{g} where \g[0] is the most recent branch direction.
+    \STATE Output: A new compressed history
+    \STATE
+    \STATE $\c = (\c$ left-shifted by \texttt{shift} bits) XOR \g[0]
+    \STATE $\c = \c\;$ XOR (\g[L(i)] left-shifted by \texttt{lastDest})
+    \STATE $\c = \c\;$ XOR (\c right-shifted by $n$ bits)
+    \STATE $\c = \c\;$ AND (bitmask of length $n$)
+ \end{algorithmic}
+\end{algorithm}
+
+One simple approach to this problem would be to hash the full branch history down to the number of index bits.  However, as Seznec notes\cite{seznec2005analysis}\cite{ogehl} and we concur, such an approach would require a large number of additional logic gates and would significantly increase the latency of the instruction decode stage of the pipeline (or whatever pipeline stage branch prediction is performed in).  Such an approach is infeasible in practice.
+
+O-GEHL addresses this problem by compressing the branch histories at each stage.\cite{cbp1}\cite{ogehl}\cite{seznec2005analysis} The exact compression algorithm is given in Algorithm\ref{alg:compression}, but the basic idea is relatively straight forward.  Each table stores its own version of the global branch history and incorporates new branches as they come in.  By shifting and masking bits depending on the history length used in the table, the history can be compressed so that its size equals the number of index bits for the table.  To actually compute the index for each table the predictor extracts bits from the path history, compressed branch history, and PC to create a bit string that is $3n$ bits long ($n$ being the number of bits used to index the table).  These bits are then compressed down to $n$ bits via a series of 3-way XOR gates and the result is used as an index into the table.  Like Seznec, we set the length of the used path history be $\min(16, L(i))$ for each table.
+
+We used a slight modification of Seznec's approach in our implementation of the indexing function.  Our function simply XORs $n$ bits from the PC, $n$ bits from the compressed path history, and $n$ bits from the compressed branch history.  The primary difference is that this approach does not compose the various contributions first.  For example, if a table uses $n=8$ index bits and the table only uses $4$ bits of history, our implementation will mask off the 4 high order bits of the branch and path histories so that they are 0.  Seznec's approach is to take 8 additional bits from the PC, so that all $3n=24$ bits contain actual data.  As our results do not differ significantly from those reported by Seznec, we do not think the difference is particularly important.

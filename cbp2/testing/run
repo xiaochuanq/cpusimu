@@ -1,0 +1,33 @@
+#!/bin/csh -e
+if ( $1 == "" ) then
+	printf "Usage: $0 <trace-file-directory>(predictor-name)\n"
+	exit 1
+endif
+#if ( ! { cd src; make -q } ) then
+#	printf "predict program is not up to date.\n"
+#endif
+if ( ! -e bin/predict ) then
+	printf "predict program is not built.\n"
+	exit 1
+endif
+if ( $2 != "" ) then
+        set predictor = $2
+else
+        set predictor = "gshare ghel seznec"#bc2 tournament ogehl seznec"
+endif
+set trace_list = `find $1 -name '*.trace*' | sort`
+set sum = 0
+set n = 0
+foreach pred ( $predictor )
+    foreach i ( $trace_list )
+	printf "%-40s\t" $i
+	set mpki = `bin/predict $i $pred debug| tail -1 | sed -e '/MPKI/s///'`
+	printf "%-10s %0.3f\n" $pred $mpki
+	set sum = `printf "$sum\n$mpki\n+\np\n" | dc`
+	@ n = $n + 1
+    end
+    printf "$pred average MPKI: "
+    printf "3\nk\n$sum\n$n\n/p\n" | dc
+end
+
+exit 0

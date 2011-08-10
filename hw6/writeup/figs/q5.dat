@@ -1,0 +1,11 @@
+# Total Miss-predictions = 73
+# ROB Size, Total Cycles Branch,
+#ROB size     Total Cycles real       Total Cycles perfect
+8                6281593      5588679
+16               4572469      3801499
+32               3546702      2701771
+64               2961356      2007406
+128              2740479      1653156
+256              2687483      1478988
+512              2683765      1403294
+1024             2683705      1364974

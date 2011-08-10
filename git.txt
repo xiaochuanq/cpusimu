@@ -1,0 +1,40 @@
+Git Usages that are highly possible in our project:
+
+0) Setup develop enviorenment in your own computer or minus server
+- mkdir ~/your/dev/path
+- cd ~/your/dev/path
+- go to your "Account Settings" at github.com, click "SSH Public Keys"
+- follow the guide in http://help.github.com/linux-key-setup/, generate your ssh key.
+-- if you don't have a .ssh directory, make one by yourself, or run ssh, and ssh will generate one for you in your home folder.
+-- if you don't have a xclip installed, simply cat your_key.pub to the console and copy precisely to the text box on github.com
+
+1) Clone the repositories
+- cd ~/your/dev/path/cis501-ogehl
+- git clone git@github.com:bcharrow/cis501-ogehl.git
+-- if permission denied, go to step 0) to reset your ssh key.
+
+2) The most possible situation that we might see in maitaining our work and synchronize with the remote master
+- git pull ( in the path where hidden file .git is and all the sub directories this makes your master up to date )
+- git branch my_branch
+- git checkout my_branch
+do jobs such as add/del/edit myfiles.
+Then if you are satisfied with your work
+- git add files (ex. git add *cpp, git add gshare.h, git add README)
+- git commit -m "your commit notes, which can be empty"
+- git checkout master
+- git merge my_branch (now your work at my_branch are merged to your local master branch. You can upload this to the server)
+- git push origin master ( or simply git push, this will merge your branch to remote branch
+
+3) Another situation we may see:
+While I am working on your own branch, my teammates have updated the remote master and how do I download and use their codes without messing my current branch
+- git checkout master
+- git pull
+- git checkout my_branch
+- git git merge master (this will merge all the dependencies such as header files etc to your branch, as long as there is no confilct, for example, other guys touched the parts you are in charge of)
+
+4) Other commonly used commands
+- git status (show your current status)
+- git branch (show your branch status)
+- git reset (undo your "git add" and other operations)
+
+5) For more information, plese refer to the free online book http://progit.org/book/

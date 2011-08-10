@@ -1,0 +1,49 @@
+#!/bin/csh -e
+if ( $1 == "" ) then
+	printf "Usage: $0 <trace-file-directory>(predictor-name)\n"
+	exit 1
+endif
+#if ( ! { cd src; make -q } ) then
+#	printf "predict program is not up to date.\n"
+#endif
+if ( ! -e bin/predict ) then
+	printf "predict program is not built.\n"
+	exit 1
+endif
+if ( $2 != "" ) then
+        set predictor = "$argv[2-]"
+else
+        set predictor = "bc2 gshare gehl"
+endif
+
+printf "\nTesting predictor(s): $predictor[*]...\n"
+set trace_list = `find $1 -name '*.trace*' | sort`
+set sum = 0
+set n = 0
+foreach pred ( $predictor )
+    set file = "../testing/${pred}-arg"
+    if(! -e $file) then
+	printf "Missing parameter file for predictor: $pred\n"
+    else
+	set lcnt = `wc -l $file`
+	set lcnt = `basename $lcnt`
+	set i = 2
+	while( $i <= $lcnt)
+	    set param = `cat $file | head -$i | tail -1`
+	    foreach trace ( $trace_list )
+		echo "cmd: bin/predict $trace $pred debug $param"
+		bin/predict $trace $pred d $param | tee > temp
+		set mpki = `cat temp | tail -1 | sed -e '/MPKI/s///'`
+		rm temp
+		printf "%-10s %0.3f\n" $pred $mpki
+		set sum = `printf "$sum\n$mpki\n+\np\n" | dc`
+		@ n = $n + 1
+	    end
+    	    printf "$pred average MPKI: "
+	    printf "3\nk\n$sum\n$n\n/p\n" | dc
+	    @ i = $i + 1
+	end
+    endif
+end
+
+exit 0

@@ -1,0 +1,17 @@
+CXX		=	g++
+CXXFLAGS	=	-O3
+CXXDEBUGFLAGS   =       -g -O0 -Wall
+
+all:		predict
+
+predict:	predict.cc trace.cc predictor.h branch.h trace.h \
+		gshare.h bc2.h gehl.h ogehl.h tournament.h
+		$(CXX) $(CXXFLAGS) -o predict predict.cc trace.cc
+
+debug:		predict.cc trace.cc predictor.h branch.h trace.h \
+		gshare.h bc2.h gehl.h ogehl.h tournament.h
+		$(CXX) $(CXXDEBUGFLAGS) -o predict predict.cc trace.cc
+clean:
+		rm -f predict
+
+test:

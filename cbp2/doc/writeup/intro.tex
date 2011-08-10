@@ -1,0 +1,17 @@
+\begin{abstract}
+
+We studied and analyzed the Optimized GEometric History Length (O-GEHL) branch predictor described in Andre Seznec's paper \cite{seznec2005analysis} that efficiently exploits long global histories in the range of 100-200 bits.
+
+The GEHL predictor features several predictor tables indexed through independent functions of the global branch history and branch address. The lengths of global history used form a geometric series (i.e., $L(i)=\alpha^{i-1}L(1)$) , allowing the GEHL predictor to efficiently capture correlation on recent as well as  old branch outcomes. The prediction is computed by passing the predictions on the predictor table through an adder.
+
+The O-GEHL uses dynamic history fitting and dynamic threshold fitting to improve the ability of GEHL predictor in exploiting long histories.
+
+Our experiments shows that GEHL and O-GEHL branch predictors significantly outperform baseline predictors, and their performance are influenced by several parameters. We also finds that the O-GEHL can be ahead pipelined using pipeline simulation model.
+\end{abstract}
+
+\section{Introduction}
+Improvement in the accuracy directly translates to performance gain in modern predictors since all modern processors feature moderate issue width with deep pipelines. The O-GEHL predictor provides a prediction as a signed counter for each of its prediction tables. Hash functions are used to combine branch history, path history and instruction address. Heuristics methods are also used to dynamically adjust the prediction thresholds and the branch history length.
+
+The implementation of O-GEHL predictor uses two metrics to evaluate its performance . The first one is the misprediction rate and the other is instruction per cycle(IPC). To evaluate the prediction accuracy of O-GEHL, we implement an infrastructure to compare O-GEHL to our existing predictors, namely, 2-bit saturating counter, gshare and tournament. This comparison gives us a baseline of the performance of O-GEHL.
+
+We then explore the importance of four parameters that would impact O-GEHL predictor's performance. They are the number of tables $M$ used in prediction, width of the counter, history length, and threshold $\theta$ in updating the predictor tables. Section 4 describes our work in evaluating the performance of our GEHL/O-GEHL predictor using misprediction rate. We also discovered how O-GEHL predictor can be efficiently ahead pipelined using a pipeline simulation model using IPC.

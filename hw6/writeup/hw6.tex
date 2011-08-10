@@ -1,0 +1,93 @@
+\documentclass[12pt,twoside]{article}
+
+\input{template.tex}
+\renewcommand{\name}{Ben Charrow, Congyun Gu, Divya Kali Ranga, Xiaochuan Qin}
+\renewcommand{\problemset}{Homework 6}
+\renewcommand{\duedate} {December 7, 2010}
+\begin{document}
+\banner
+
+\section{Unrealistic Memory Scheduling and Perfect Branch Prediction}
+\begin{enumerate}[a)]
+\item Once we exceed a 32-entry ROB but before we reach a 64-entry ROB, our
+  idealized processor exceeds an average uIPC of 4.
+\item In order to achieve 95\% of the performance of the 1024-entry ROB
+  ($0.95\times 7.33=6.9728$) an ROB must have just over 256 entries.
+\end{enumerate}
+
+\section{Conservative Memory Scheduling and Perfect Branch Prediction}
+\begin{enumerate}[a)]
+\item In our conservative memory scheduling model, having at least a 64-entry
+  ROB is required to exceed an average uIPC of 4.
+\item In order to achieve 95\% of the performance of the 1024-entry ROB,
+  ($0.95\times 4.86=4.61$) an 256-entry ROB will suffice.
+\item The largest difference between unrealistic and conversative memory
+  happens when both processors have reached their peak uIPC.  At this point,
+  unrealistic memory scheduling is 50\% faster (uIPC of 7.33 vs. 4.86).
+\end{enumerate}
+
+\section{Perfect Memory Scheduling and Perfect Branch Prediction}
+
+\begin{enumerate}[a)]
+\item The ROB must have more than 32 entires to achieve an uIPC greater than 4.
+\item In order to achieve 95\% of the performance of the 1024-entry ROB,
+  ($0.95\times 7.326=6.95$) having more than a 512-entry ROB will suffice.
+\item The largest uIPC difference is with a 128-entry ROB.  At this point,
+  unrealistic memory scheduling is 5\% faster than perfect memory
+  scheduling (uIPC of 6.39 vs 6.04).
+\end{enumerate}
+
+\section{Realistic Branch Prediction}
+\begin{enumerate}[a)]
+\item The processor never achieves an average uIPC of 4, regardless of ROB
+  size.  Making an infinite-entry ROB would likely make little difference, as
+  our data shows that there is no performance difference between large
+  (i.e. 256 and above) entry ROBs.
+\item In order to achieve 95\% of the performance of the 1024-entry ROB,
+  ($0.95\times 3.72=3.53$) an ROB must have 128 entries or more.
+\item The largest difference between perfect and realistic branch prediction
+  occurs when there are 1024 or more entries in the ROB.  When this happens,
+  perfect branch prediction is 96\% faster than realistic branch prediction
+  (uIPC of 7.326 vs 3.726).
+
+\end{enumerate}
+
+\section{Comparison to Contemporary Processor}
+\begin{enumerate}[a)]
+\item It seems like having 128 entries in the i7's ROB would be a bad idea.
+  Based on our results, having more of them would result in a higher uIPC.
+\item One simplification that we made is the huge number of registers.  This
+  means that the larger we make the ROB, the more renaming we can do and the
+  higher our uIPC is, even with very large ROB sizes.  If we had modelled a
+  smaller/more realistic register file, we would have found that the benefits
+  of increasing the ROB size stopped sooner, because we would run out of
+  physical registers to do renaming.
+
+  Another relevant simplification that we made was that we have enough entries
+  in the instruction queue and that we can always fetch N instructions.  If
+  these assumptions are not met, then increasing the ROB size will not make any
+  performance difference, because instructions will not be able to be processed
+  any faster.
+\end{enumerate}
+
+\section{Average Cost per Branch Mis-prediction}
+\begin{enumerate}[a)]
+\item There are three components to the branch misprediction.  One is when a
+  mis-prediction occurs, the ROB needs to be flushed and it takes time to
+  repopulate this in order to achieve a decent commit throughput.  Another is
+  the amount of time that we have spent executing instructions that will not be
+  committed.  The third is the fixed cost to redirect the fetch.
+\item The cost of a branch prediction consists of the 4 cycle delay that occurs
+  after its execution and the amount of time inbetween where it is fetched and
+  issued.  The first component is fixed, the second one is a funciton of number
+  of entries in the ROB.  So, the larger the ROB, the greater the cost of a
+  branch prediction.
+\end{enumerate}
+
+\newpage
+\section{Graphs}
+\graph{Graph A (Questions 1-4)}{figs/q1234.pdf}
+\graph{Graph B (Question 5)}{figs/q5.pdf}
+
+\end{document}
+

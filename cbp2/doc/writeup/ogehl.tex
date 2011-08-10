@@ -1,0 +1,62 @@
+\section{The O-GEHL predictor}
+The O-GEHL predictor is an improved and more dynamic version of the GEHL predictor.  The update rule, possible table configurations, and index function are essentially the same.  The difference is that instead of using fixed values for the threshold cutoff $\theta$ and the length of the branch history, O-GEHL dynamically adjusts these parameters while a program is executing.  This adaptability enables a single O-GEHL predictor to perform close to the best performance of several different GEHL predictors across a wide variety of programs.
+
+\subsection{Adapative threshold}
+\label{sec:adaptT}
+The value of $\theta$ controls whether or not the predictor is updated if a branch is correctly predicted (see \ref{alg:update}).  If its value is too low, the predictor will only update when a branch is mispredicted, which will result in the saturating counters hovering close to zero, making them more susceptible to noise. Conversely, if its value is too high the predictor will frequently update its table, causing the predictor to overfit to correctly predicted branches.  In our experimental evaluation, we found that the best value of $\theta$ changes from program to program (Table~\ref{table:bestTheta}).
+
+To alleviate this issue, O-GEHL dynamically adjusts the value of $\theta$ in such a way that the number of updates on a miss-prediction are roughly equal to the number of updates on a correct prediction.  This approach is undoubtedly heurestic, but Seznec found it to be effective.\cite{seznec2005analysis}\cite{ogehl}  The basic idea is to maintain a saturating counter, the Threshold Counter (TC), whose value is increased or decreased depending on the cause of the update.  If TC becomes fully saturated one way or the other, then the value of theta is incremented or decremented appropriately.  The exact algorithm can be found in Algorithm~\ref{alg:dynT}.  Seznec suggested that using a 7-bit counter for TC was effective, and although we did not examine this parameter in detail, we obtained good experimental results using this value.
+
+\begin{algorithm}[h]
+  \caption{Dynamic $\theta$ adjustment.  This algorithm updates the value of $\theta$ so that the number of updates due to low confidence is roughly equal the number of updates due to mispredictions.}
+  \begin{algorithmic}[1]
+    \label{alg:dynT}
+    \STATE Input: The actual direction of the branch $a$, the predictor's guess $p$, and the sum of all of the tables predictions $S$.
+   \STATE
+    \IF{$p\neq a$}
+      \STATE $TC = TC + 1$
+    \ELSIF{$|S|\leq\theta$}
+      \STATE $TC = TC - 1$
+    \ENDIF
+    \IF{TC is saturated positive}
+      \STATE $\theta=\theta+1$
+      \STATE $TC=0$
+    \ELSIF{TC is saturated negative}
+      \STATE $\theta=\theta-1$
+      \STATE $TC=0$
+    \ENDIF
+  \end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Adaptive history}
+\label{sec:adaptH}
+O-GEHL is also able to dynamically adjust the history length that it uses in some of its tables.  The motivation for this ability is that some programs exhibit predictable behavior over the course of 300 branches, whereas some do not.  The only way for a predictor to be able to perform at its peak on both types of programs, while still exploiting history, is for it to dynamically adjust.  The O-GEHL accomplishes this by having some of its tables have two history lengths: a short one and a long one.  All of these tables will unanimously switch between their short length and long length depending on the value of a saturating counter. The long lengths are a continuation of the geometric series governed by $\alpha$ and $L1$, so the only additional parameters are the number of additional history lengths and the number of bits used in the saturating counter.
+
+% how it is implemented
+Clearly the crux of this approach is deciding when to switch.  As Seznec notes, programs that do not need longer history lengths will exhibit a high degree of aliasing (i.e. the same branches will consistently cause predictor updates).\cite{seznec2005analysis}\cite{ogehl} For programs requiring shorter histories, this effect will be most pronounced in the last table.  Similarly, if a wide variety of branches are causing predictor updates, it is an indication that a longer branch history will be beneficial.  O-GEHL measures this aliasing by recording the low-order bit of the PC whenever the predictor is updated, and storing this bit in an array indexed by the branch's index for the last table.  A saturating counter is used to track the source of mispredictions over time.  This counter is called the Aliasing Counter (AC).  Seznec reported that using 9 bits for the AC allowed the predictor to adapt when needed, but did not cause frequent length changes.  In our analysis, we do not examine either of these values.  The complete algorithm is given in Algorithim~\ref{alg:dynH}.
+
+% how we did it for various table sizes
+For our implementation of dynamic history fitting in the O-GEHL paper, we parameterized the number of additional history lengths used.  Seznec does not describe how these lengths should be spread for an arbitrary predictor, and so we chose to to evenly spread the additional history lengths over all of the tables aside from the first one and the last one.  The first is excluded because it never uses any history, while the last is excluded so that it can measure the aliasing.  As an example, if we had 6 tables and wanted 2 additional long history values, then table $T[2]$ would get a long history equal to $\alpha^{5}L(1)$ and table $T[4]$ would get a long history equal to $\alpha^{6}L(1)$.
+
+\begin{algorithm}[h]
+  \caption{Dynamic history adjustment.  Adjust whether or not the predictor uses the long version of table histories or the short one.}
+  \label{alg:dynH}
+  \begin{algorithmic}[1]
+
+    \STATE Input: Whether or not the predictor was updated $u$, the \texttt{PC} of the branch, and the index $i$ of the branch in the last table.
+    \STATE
+    \IF{$u$ is true}
+      \IF{Low order bit of $\texttt{PC}\neq\texttt{Tag}[i]$}
+        \STATE $AC = AC - 4$
+      \ELSE
+        \STATE $AC = AC + 1$
+      \ENDIF
+      \IF{AC is saturated positive}
+        \STATE Set tables to use long history
+      \ELSIF{AC is saturated negative}
+        \STATE Set tables to use short history
+      \ENDIF
+    \ENDIF
+  \end{algorithmic}
+\end{algorithm}

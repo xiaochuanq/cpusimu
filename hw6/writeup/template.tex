@@ -1,0 +1,78 @@
+%================================= Packages ==================================%
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{algorithmic}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage[usenames,dvipsnames]{color}
+
+%================================== Banner ===================================%
+
+\newcommand{\name}{Ben Charrow}
+\newcommand{\class}{CIS 501 -- Architecture}
+\newcommand{\problemset}{Specify a problemset!}
+\newcommand{\duedate}{}
+\newcommand{\collab}{}
+\newcommand{\banner}{
+\begin{center}
+  \framebox{
+    \vbox{
+      {\bf\large\class} \\ \vfill
+      {\bf\large\problemset} \\
+      \name\;\collab \hfill  \hfill \duedate \\
+    }
+  }
+\end{center}
+\bigskip
+}
+
+%=============================== Math commands ===============================%
+% Stuff for probability
+\newcommand{\prob}[1]{\ensuremath{\mathbf{Pr}\left[#1\right]}}
+\newcommand{\expec}[1]{\ensuremath{\mathbf{E}\left[#1\right]}}
+\newcommand{\var}[1]{\ensuremath{\operatorname{Var}\left[#1\right]}}
+
+% Custom functions
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\IG}{IG}
+\newcommand{\tn}[1]{\textnormal{#1}}
+% Braces!
+\newcommand{\curly}[1]{\left(#1\right)}
+
+%================================== Graphs ===================================%
+
+\newcommand{\graph}[2]{
+\subsection{#1}
+\begin{figure}[h]
+  \centering
+  \scalebox{1.7}{\includegraphics{#2}}
+\end{figure}
+\newpage
+}
+%=================================== Code ====================================%
+\definecolor{MyDarkGreen}{rgb}{0.0,0.4,0.0}
+
+\lstset{language=C,                             % Use C
+        frame=single,                           % Single frame around code
+        basicstyle=\scriptsize\ttfamily,        % Use small true type font
+        keywordstyle=[1]\color{Blue}\bf,        % C functions bold and blue
+        keywordstyle=[2]\color{Purple},         % C function arguments purple
+        keywordstyle=[3]\color{Blue}\underbar,  % User functions underlined and blue
+        identifierstyle=,                       % Nothing special about identifiers
+                                                % Comments small dark green courier
+        commentstyle=\usefont{T1}{pcr}{m}{sl}\color{MyDarkGreen}\scriptsize,
+        stringstyle=\color{Purple},             % Strings are purple
+        showstringspaces=false,                 % Don't put marks in string spaces
+        tabsize=4,                              % 5 spaces per tab
+        numbers=left,                           % Line numbers on left
+        firstnumber=1,                          % Line numbers start with line 1
+        numberstyle=\scriptsize\color{Blue},    % Line numbers are blue
+        stepnumber=5,                           % Line numbers go in steps of 5
+        basicstyle=\tiny
+        }

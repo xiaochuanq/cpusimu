@@ -1,0 +1,11 @@
+# obtained using short traces
+# mis prediction rate across all traces, all predictors 64KB big.
+# trace,	GEHL Alpha=1.2	GEHL Alpha=2	OGEHL
+gcc		5.57	3.15	3.72
+go		19.10	15.46	15.21
+hmmer		8.47	8.24	8.39
+libquantum	0.00	0.00	0.00
+sjeng		10.48	4.15	5.32
+sphinx3		3.93	1.53	1.70
+art		3.76	0.31	0.30
+mcf		16.53	14.59	15.52

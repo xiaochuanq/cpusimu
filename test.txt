@@ -1,0 +1,16 @@
+How to add and run test
+1) add new test 
+- Open CMakeLists.txt located at ~/your/dev/path/cis501-ogehl/cbp2
+- Find ADD_TEST at the bottom of this file.
+- Add a new line of ADD_TEST in the format as
+      "ADD_TEST(TestName, ${TEST_SCRIPTS_DIR}/shell_script ${TRACES_DIR} [Arg1 Arg2 ...])"
+
+  * TestName can be defined at your will as long as there is no other test with the same name.
+  * TEST_SCRIPTS_DIR and TRACES_DIR are predefined variables. They are testing/ and traces/ respectively.
+  * Now we have two shell scripts: run and run2. They all take predictor names as optional argumetns. However, run2 requires an extra argument list file for each predictor to be tested. Each line of this file should contain arguments required by your predictor's ctor function. run2 starts parsing from the second line.
+
+2) run test(s)
+- Follow the instructions in build.txt to make the project.
+- In build dir, type "make test" to run all tests (not the test "All")
+- To run a specific test, type "ctest -R TestName"
+- You do not have to remember the exact name of your test. Key in the first or first a few letters of the TestName and ctest will infer.
